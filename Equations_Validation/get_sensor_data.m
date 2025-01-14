@@ -421,7 +421,7 @@ resampled_data = {};
 % Need to use unique_points function if dt_list is not strictly increasing
 original_ts_names = {'acc_b_IMU', 'om_b_IMU', 'acc_fl_IMU', 'om_fl_IMU', ...
                      'acc_fr_IMU', 'om_fr_IMU', 'acc_rl_IMU', 'om_rl_IMU', ...
-                     'acc_rr_IMU', 'om_rr_IMU', 'j_ang', 'j_vel',,'foot_contact'};
+                     'acc_rr_IMU', 'om_rr_IMU', 'j_ang', 'j_vel','foot_contact'};
 for i = 1:length(original_ts_names)
     ts_name = original_ts_names{i};
     ts = eval(ts_name); % Get the original timeseries
