@@ -20,6 +20,7 @@ param.body_imu_topic = '/imu/trunk_data';
 param.mocap_topic = '/odom/ground_truth';
 param.joint_foot_topic = '/joint_group_effort_controller/joint_trajectory';
 param.joint_readings = '/joint_states';
+param.foot_contact = '/foot_contacts';
 
 %% Extraction Body IMU Data
 bSel = select(bag,'Topic',param.body_imu_topic);
@@ -207,6 +208,39 @@ fprintf('T_tot= %f s\n', time(end)-time(1));
 fprintf('dt_mean= %f s\n', dt4);
 fprintf('dt_max= %f s\n', max(dt_list));
 fprintf('dt_min= %f s\n\n', min(dt_list));
+
+%% FOOT CONTACT
+bSel = select(bag,'Topic',param.foot_contact);
+messages = readMessages(bSel);
+if ~isempty(messages)
+    % initialize the variables
+    k = length(messages);
+    time=zeros(k,1);
+    contact = zeros(k,4); % four legs and the order is ....? 
+    for i=1:k
+        time(i,:) = double(messages{i}.header.stamp.sec) + double(messages{i}.header.stamp.nanosec)*10^-9;
+        for j=1:4
+            contact(i,j) = messages{i}.contacts(j);
+        end
+    end
+    foot_contact = timeseries([contact(:,1),contact(:,2),contact(:,3),contact(:,4)],time(:,1));
+    
+    %Check on time
+    dt_list = zeros(k-1,1);
+    dt_list = diff(time);%time(i) - time(i-1);
+    if (any(dt_list<=0) && stop==0)
+        fprintf('dt_list is NOT strictly higher then zero \n');
+        stop=1;
+    end
+    dt7=mean(dt_list);
+    disp('Foot Contact Simulation:')
+    fprintf('T_start= %f s\n', time(1));
+    fprintf('T_end= %f s\n', time(end));
+    fprintf('T_tot= %f s\n', time(end)-time(1));
+    fprintf('dt_mean= %f s\n', dt7);
+    fprintf('dt_max= %f s\n', max(dt_list));
+    fprintf('dt_min= %f s\n\n', min(dt_list));
+end
 
 %% Extraction Joint Data 
 bSel = select(bag,'Topic',param.joint_readings);
