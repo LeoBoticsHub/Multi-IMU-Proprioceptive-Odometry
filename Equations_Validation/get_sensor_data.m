@@ -3,7 +3,8 @@ clear all
 clc
 
 %%
-bagFolder = 'C:\Users\Edoardo\OneDrive\Desktop\Tesi\Leonardo\Ros2\edoardone_bag_trot'; % create the path for the ros2 bag
+%bagFolder = 'C:\Users\Edoardo\OneDrive\Desktop\Tesi\Leonardo\Ros2\edoardone_bag_trot'; % create the path for the ros2 bag
+bagFolder = '/home/edoardo/OneDrive/Desktop/Tesi/Leonardo/Equations_Validation/Test'; % create the path for the ros2 bag
 bag = ros2bagreader(bagFolder); % create a ros2bagreader object
 
 % Available Topic visualization
