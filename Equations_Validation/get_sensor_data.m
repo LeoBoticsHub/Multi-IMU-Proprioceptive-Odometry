@@ -368,6 +368,7 @@ end
 
 
 %% RESAMPLE DATA
+% if there is no contact sensor comment all the relative part 
 start_time_list = [acc_b_IMU.Time(1);
                  om_b_IMU.Time(1);
                  acc_fl_IMU.Time(1);
@@ -379,7 +380,8 @@ start_time_list = [acc_b_IMU.Time(1);
                  acc_rr_IMU.Time(1);
                  om_rr_IMU.Time(1);
                  j_ang.Time(1);
-                 j_vel.Time(1)];
+                 j_vel.Time(1);
+                 foot_contact.Time(1)];% comment if there is no contact sensor
 
 end_time_list = [acc_b_IMU.Time(end);
                  om_b_IMU.Time(end);
@@ -392,10 +394,11 @@ end_time_list = [acc_b_IMU.Time(end);
                  acc_rr_IMU.Time(end);
                  om_rr_IMU.Time(end);
                  j_ang.Time(end);
-                 j_vel.Time(end)];
+                 j_vel.Time(end);
+                 foot_contact.Time(end)];% comment if there is no contact sensor
 max_start_time = max(start_time_list);
 min_end_time = min(end_time_list);
-dt=min([dt1,dt2,dt3,dt4,dt5,dt6]);
+dt=min([dt1,dt2,dt3,dt4,dt5,dt6,dt7]);
 common_time_vector = max_start_time : dt : min_end_time;
 resampled_data = {};
 % % Linear interpolation method
@@ -411,13 +414,14 @@ resampled_data = {};
 % resampled_data.om_rr_IMU    = resample(om_rr_IMU, common_time_vector);
 % resampled_data.j_ang      = resample(j_ang, common_time_vector);
 % resampled_data.j_vel      = resample(j_vel, common_time_vector);
+% resampled_data.foot_contact      = resample(foot_contact, common_time_vector);
 
 
 % Other interpolation Method (pchip)
 % Need to use unique_points function if dt_list is not strictly increasing
 original_ts_names = {'acc_b_IMU', 'om_b_IMU', 'acc_fl_IMU', 'om_fl_IMU', ...
                      'acc_fr_IMU', 'om_fr_IMU', 'acc_rl_IMU', 'om_rl_IMU', ...
-                     'acc_rr_IMU', 'om_rr_IMU', 'j_ang', 'j_vel'};
+                     'acc_rr_IMU', 'om_rr_IMU', 'j_ang', 'j_vel',,'foot_contact'};
 for i = 1:length(original_ts_names)
     ts_name = original_ts_names{i};
     ts = eval(ts_name); % Get the original timeseries
