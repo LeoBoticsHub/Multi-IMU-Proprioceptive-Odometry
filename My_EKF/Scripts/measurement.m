@@ -1,4 +1,4 @@
-function meas_residual = measurement(x, phi, dphi, ddphi, om_IMU_f, acc_IMU_f, om_dot_b_b, om_IMU_b, acc_IMU_b, param)
+function meas_residual = measurement(x, phi, dphi, ddphi, om_IMU_f, acc_IMU_f, om_dot_b_b, om_IMU_b, acc_IMU_b, yawk, param)
 
 % this measurement function calculates the measurement residuals
 
@@ -42,8 +42,8 @@ foot_vel = [x(19:21);x(25:27);x(31:33);x(37:39)];
 ba = x(40:42);      
 bg = x(43:45);      
 
-n_meas_leg = 15; % For now there is no slip detection (it will add 3 residual for each leg)
-meas_residual = zeros(66,1,class(x)); % setting to zero the residuals
+n_meas_leg = 16; % For now there is no slip detection (it will add 3 residual for each leg)
+meas_residual = zeros(71,1,class(x)); % setting to zero the residuals
 
 for i = 1:param.num_leg % iteration for all legs
     j_ang = phi((i-1)*3+1:(i-1)*3+3); % joint angle
@@ -73,7 +73,7 @@ for i = 1:param.num_leg % iteration for all legs
         w_b - ang_vel;
 
     meas_residual((i-1)*n_meas_leg+10:(i-1)*n_meas_leg+12) = ...
-        a_f-foot_ba - (J_vel*j_acc+J_vel_dot*j_vel + 2*skew(w_b)*J_vel*j_vel+skew(w_b)*skew(w_b)*p_fk+skew(w_dot_b)*p_fk) - R_bw'*acc_body; 
+        a_f-foot_ba - (J_vel*j_acc+J_vel_dot*j_vel + 2*skew(w_b)*J_vel*j_vel+skew(w_b)*skew(w_b)*p_fk+skew(w_dot_b)*p_fk) - R_bw'*(acc_body + [0;0;9.8]); 
     
     % Pivoting Contact Model
     foot_w_world = R_bw*om_IMU_f((i-1)*3+1:(i-1)*3+3);
@@ -81,7 +81,7 @@ for i = 1:param.num_leg % iteration for all legs
 
     foot_support_vec = -p_fk_world/norm(p_fk_world)*0.05;
     foot_vel_world = cross(foot_w_world, foot_support_vec);
-
+    
     if (param.mipo_use_foot_ang_contact_model == 1)
             meas_residual((i-1)*n_meas_leg+13:(i-1)*n_meas_leg+15) = ...
                 foot_vel_world - foot_vel((i-1)*3+1:(i-1)*3+3);
@@ -89,12 +89,18 @@ for i = 1:param.num_leg % iteration for all legs
         meas_residual((i-1)*n_meas_leg+13:(i-1)*n_meas_leg+15) = ...
             -foot_vel((i-1)*3+1:(i-1)*3+3);
     end
+    
+    % foot height should be 0 
+    meas_residual((i-1)*n_meas_leg+16) = foot_pos((i-1)*3+3);
 
 end
 
-meas_residual(61:63) = ...
+meas_residual(65:67) = ...
         om_IMU_b-bg - ang_vel;
 
-meas_residual(64:66) = ...
-        acc_IMU_b-ba - R_bw'*acc_body;
+meas_residual(68:70) = ...
+        acc_IMU_b-ba - R_bw'*(acc_body + [0;0;9.8]);
+
+meas_residual(71) = yawk - euler(3);
+
 end

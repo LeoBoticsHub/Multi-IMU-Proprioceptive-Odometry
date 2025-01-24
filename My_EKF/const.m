@@ -4,7 +4,6 @@
 param.num_leg = 4; % number of legs
 param.leg_name = ['FL','FR','RL', 'RR']; % leg name
 param.all_leg = [1,2,3,4]; % leg identification number
-
 % offset wth respect to robot body center
 param.ox = [0.1881,0.1881,-0.1881,-0.1881]; % longitudinal axis 
 param.oy = [0.04675,-0.04675,0.04675,-0.04675]; % lateral axis (positive on the left side)

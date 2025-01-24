@@ -87,13 +87,13 @@ foot4_acc = u(10:12) - foot4_ba;  % already changed to body frame
 
 deuler = mtx_w_to_euler_dot(euler)*ang_vel;
 R_bw = euler_to_rot(euler); % rotation matrix from body to world frame 
-acc = acc_body -[0;0;9.8];
+%acc = acc_body -[0;0;9.8];
 foot1_acc_w = R_bw*foot1_acc - [0;0;9.8];
 foot2_acc_w = R_bw*foot2_acc - [0;0;9.8];
 foot3_acc_w = R_bw*foot3_acc - [0;0;9.8];
 foot4_acc_w = R_bw*foot4_acc - [0;0;9.8];
 
-xdot = [vel;acc;zeros(3,1);
+xdot = [vel;acc_body;zeros(3,1);
         deuler;zeros(3,1);
         foot1_vel;foot1_acc_w;
         foot2_vel;foot2_acc_w;

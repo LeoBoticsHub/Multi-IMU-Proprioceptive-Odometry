@@ -1,7 +1,6 @@
-% La matrice mtx può essere moltiplicata per il vettore velocità angolare
-% per ottenere il vettore velocità in angoli di eulero.
+% The matrix can be multiplied by the angular velocity vector to obtain the euler angle reates theta_dot
 function mtx = mtx_w_to_euler_dot(euler)
-    % convert euler angle theta to the euler kinematics formula
+% convert euler angle theta to the euler kinematics formula
     
 r = euler(1);
 p = euler(2);

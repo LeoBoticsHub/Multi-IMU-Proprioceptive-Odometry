@@ -38,7 +38,7 @@ ekf.state_size = 69;
 %   - a4      (10:12)   foot 4 IMU acceleration (already in body frame)
 %   - t       (13)      time 
 
-ekf.meas_size = 66; 
+ekf.meas_size = 71; 
 ekf.control_size = 13;
 
 
@@ -54,6 +54,7 @@ ekf.df = Function('process_jac',{s_xk, s_uk, s_dt},{s_F});
 ekf.db = Function('control_jac',{s_xk, s_uk, s_dt},{s_B});
 
 % get measurement jacobians
+s_yaw = casadi.MX.sym('yaw', 1);
 s_phi = casadi.MX.sym('phi', 12);  % define a symbolic variable representing the joint angles
 s_dphi = casadi.MX.sym('dphi', 12);   % define a symbolic variable representing the joint velocities
 s_ddphi = casadi.MX.sym('ddphi', 12);   % define a symbolic variable representing the joint accelerations
@@ -62,9 +63,9 @@ s_a_f = casadi.MX.sym('a_f', 12);   % define a symbolic variable representing th
 s_w_dot_f = casadi.MX.sym('dw_f', 12);   % define a symbolic variable representing the feet IMU angular velocities
 s_w_b = casadi.MX.sym('w_b', 3);   % define a symbolic variable representing the body IMU angular velocities
 s_a_b = casadi.MX.sym('w_a', 3);   % define a symbolic variable representing the body IMU linear accelerations
-s_r = measurement(s_xk, s_phi, s_dphi, s_ddphi, s_w_f, s_a_f, s_w_dot_f, s_w_b, s_a_b, param);   % EKF measurement: symbolic expression of the expected measurement residual
+s_r = measurement(s_xk, s_phi, s_dphi, s_ddphi, s_w_f, s_a_f, s_w_dot_f, s_w_b, s_a_b, s_yaw, param);   % EKF measurement: symbolic expression of the expected measurement residual
 s_R = jacobian(s_r, s_xk);   % Jacobian of the measurement function with respect to state
-ekf.r = Function('meas',{s_xk, s_phi, s_dphi, s_ddphi, s_w_f, s_a_f, s_w_dot_f, s_w_b, s_a_b},{s_r});
-ekf.dr = Function('meas_jac',{s_xk, s_phi, s_dphi, s_ddphi, s_w_f, s_a_f, s_w_dot_f, s_w_b, s_a_b},{s_R});
+ekf.r = Function('meas',{s_xk, s_phi, s_dphi, s_ddphi, s_w_f, s_a_f, s_w_dot_f, s_w_b, s_a_b, s_yaw},{s_r});
+ekf.dr = Function('meas_jac',{s_xk, s_phi, s_dphi, s_ddphi, s_w_f, s_a_f, s_w_dot_f, s_w_b, s_a_b, s_yaw},{s_R});
 
 end

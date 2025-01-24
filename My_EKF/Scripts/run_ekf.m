@@ -1,8 +1,9 @@
-function state = run_ekf(data, param)
+function [state, param] = run_ekf(data, param)
 
 total_steps = size(data.acc_b_IMU.Time,1);
 total_start_idx = param.data_start_idx;
-total_end_idx =  total_steps-1;
+total_end_idx =  total_steps-200;
+param.data_end_idx = total_end_idx;
 N = total_end_idx - total_start_idx + 1; 
 
 ekf = ekf_conf(param);
@@ -110,18 +111,30 @@ for idx=total_start_idx:total_end_idx
                          0]);  
            
     ck = double(data.foot_contact.Data(idx,:)); 
-    num_meas = 15; % number of residual equation for each leg
+    num_meas = 16; % number of residual equation for each leg
 
     % Measurement Noise Covariance R
-    ekf.R = 1e-2*eye(ekf.meas_size);
-
+    ekf.R = diag([ repmat([param.meas_n_fk_pos * ones(3,1); % forward kinematic
+                           param.meas_n_lo_vel * ones(3,1); % leg odometry
+                           param.meas_n_om_formula * ones(3,1);  % foot omega equation
+                           param.meas_n_acc_formula * ones(3,1);  % foot acceleration equation
+                           param.meas_n_zero_vel * ones(3,1) % contact mode estimation 
+                           param.meas_n_foot_height],4,1);         
+                         param.meas_n_om_body * ones(3,1);    % body IMU angular velocity
+                         param.meas_n_acc_body * ones(3,1);     % body IMU linear acceleration
+                         param.meas_n_yaw]);    
+       
     for i = 1:param.num_leg
         if (param.mipo_use_md_test_flag == 0)
             ekf.R((i-1)*num_meas+13:(i-1)*num_meas+15,(i-1)*num_meas+13:(i-1)*num_meas+15) = ...
                 (1 + (1 - ck(i)) * 1e5)*param.meas_n_zero_vel *dt*eye(3);
+            ekf.R((i-1)*num_meas+16,(i-1)*num_meas+16) = ...
+                (1 + (1 - ck(i)) * 1e5)*param.meas_n_foot_height *dt;
         else
             ekf.R((i-1)*num_meas+13:(i-1)*num_meas+15,(i-1)*num_meas+13:(i-1)*num_meas+15) = ...
                 param.meas_n_zero_vel*eye(3);
+            ekf.R((i-1)*num_meas+16,(i-1)*num_meas+16) = ...
+                param.meas_n_foot_height;
         end
     end
     
@@ -137,8 +150,11 @@ for idx=total_start_idx:total_end_idx
     for i = 1:param.num_leg
         hat_om_dot_b_b((i-1)*3+1:(i-1)*3+3) = (data.om_dot_b_b(:,idx,i));
     end
-    y = full(ekf.r(x01, hat_phi, hat_dphi, hat_ddphi, gyro_IMU_bs, accel_IMU_bs, hat_om_dot_b_b', hat_om_b_IMU, hat_acc_b_IMU)); % Residual
-    H = full(ekf.dr(x01, hat_phi, hat_dphi, hat_ddphi, gyro_IMU_bs, accel_IMU_bs, hat_om_dot_b_b', hat_om_b_IMU, hat_acc_b_IMU)); % Jacobian of Measurement
+    %
+    hat_yaw = data.orient_mocap_euler.Data(idx,3)';
+    %
+    y = full(ekf.r(x01, hat_phi, hat_dphi, hat_ddphi, gyro_IMU_bs, accel_IMU_bs, hat_om_dot_b_b', hat_om_b_IMU, hat_acc_b_IMU, hat_yaw)); % Residual
+    H = full(ekf.dr(x01, hat_phi, hat_dphi, hat_ddphi, gyro_IMU_bs, accel_IMU_bs, hat_om_dot_b_b', hat_om_b_IMU, hat_acc_b_IMU, hat_yaw)); % Jacobian of Measurement
     
     % Residual Covariance 
     S = H*P01*H' + ekf.R;
