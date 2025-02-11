@@ -33,6 +33,7 @@ mocap_vel = zeros(size(resampled_data.pos_mocap.Data));
 for p = 1:3
     mocap_vel(:,p) = conv(resampled_data.pos_mocap.Data(:,p), factorial(1)/(-dt^1) * g(:,2), 'same');
 end
+resampled_data.vel_mocap  = mocap_vel;
 %%
 param.R_fs = {[-1  0  0;
                0  0 -1;

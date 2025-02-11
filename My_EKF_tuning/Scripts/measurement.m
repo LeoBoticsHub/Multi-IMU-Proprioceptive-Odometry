@@ -75,14 +75,15 @@ for i = 1:param.num_leg % iteration for all legs
         a_f-foot_ba - (J_vel*j_acc+J_vel_dot*j_vel + 2*skew(w_b)*J_vel*j_vel+skew(w_b)*skew(w_b)*p_fk+skew(w_dot_b)*p_fk) - R_bw'*(acc_body + [0;0;9.8]); 
     
     % Pivoting Contact Model
-    foot_support_vec = -p_fk/norm(p_fk)*0.05;
+    R_fb = R_fb_func(j_ang);
+    foot_support_vec = R_fb*[0;0;0.05];%-p_fk/norm(p_fk)*0.05;
     foot_vel_eq = skew(w_f)*foot_support_vec;
     
     if (param.pivoting_model == 1)
             meas_residual((i-1)*n_meas_leg+13:(i-1)*n_meas_leg+15) = ...
                 foot_vel_eq - R_bw'*foot_vel((i-1)*3+1:(i-1)*3+3);
     else 
-        meas_residual((i-1)*n_meas_leg+13:(i-1)*n_meas_leg+15) = 0;
+        meas_residual((i-1)*n_meas_leg+13:(i-1)*n_meas_leg+15) = -foot_vel((i-1)*3+1:(i-1)*3+3);
     end
     
     % foot height should be 0 

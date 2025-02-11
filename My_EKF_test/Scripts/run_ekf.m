@@ -12,10 +12,14 @@ ekf = ekf_conf(param);
 foot_pos_vel_acc_list = zeros(9*param.num_leg,1);
 if param.has_mocap == 1
     init_pos = data.pos_mocap.Data(total_start_idx,:)';
+    init_euler = data.orient_mocap_euler.Data(total_start_idx,:)';
+    init_vel = data.vel_mocap(total_start_idx,:)';
 else
     init_pos = [0;0;param.init_body_height];
+    init_euler = zeros(3,1);
+    init_vel = zeros(3,1);
 end
-init_euler = zeros(3,1);
+
 R_bw = euler_to_rot(init_euler);
 phi = data.j_ang.Data(total_start_idx,:)';
 for i = 1:param.num_leg
@@ -26,7 +30,7 @@ end
 
 x0 = [
     init_pos;
-    zeros(3,1);
+    init_vel;
     zeros(3,1);
     init_euler;
     zeros(3,1);
@@ -100,9 +104,6 @@ for idx=total_start_idx:total_end_idx
                          param.proc_n_foot3_bg  *ones(3,1);    % foot3 gyro bias random walk
                          param.proc_n_foot4_ba  *ones(3,1);    % foot4 acc bias random walk
                          param.proc_n_foot4_bg  *ones(3,1)]);  % foot4 gyro bias random walk
-    
-    num_meas = 15; % number of residual equation for each leg
-
     % Measurement Noise Covariance R
     ekf.R = diag([ repmat([param.meas_n_fk_pos * ones(3,1); % forward kinematic
                            param.meas_n_lo_vel * ones(3,1); % leg odometry
@@ -130,18 +131,14 @@ for idx=total_start_idx:total_end_idx
     % Residual Covariance 
     S = H*P01*H' + ekf.R;
 
-    
-    mask = ones(ekf.meas_size,1);
-    mask = logical(mask);
-
     % Kalman Gain
-    K  = P01 * H(mask,:)' * inv(S(mask,mask));
+    K  = P01 * H' * inv(S);
 
     % State Update
-    x_list(:,k+1) = x01 - K*y(mask); 
+    x_list(:,k+1) = x01 - K*y; 
 
     % Covariance Update
-    cov_list(:,:,k+1) = ( eye(ekf.state_size)-K*H(mask,:))*P01;
+    cov_list(:,:,k+1) = ( eye(ekf.state_size)-K*H)*P01;
     cov_list(:,:,k+1) = (cov_list(:,:,k+1) + cov_list(:,:,k+1)')/2;
 end
 

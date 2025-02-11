@@ -55,16 +55,16 @@ param.proc_n_foot_pos_xy =1e-3;
 param.proc_n_foot_pos_z =1e-3;
 param.proc_n_foot_vel_xy =0.002;%1e-5;
 param.proc_n_foot_vel_z =0.01;%2.5e-5;
-param.proc_n_ba = 5e-6;
-param.proc_n_bg = 1.6e-5;
-param.proc_n_foot_ba = 5e-7;   
-param.proc_n_foot_bg = 5e-8;
+param.proc_n_ba = 1e-10;%5e-7;
+param.proc_n_bg = 1e-10;%5e-8;
+param.proc_n_foot_ba = 1e-10;%5e-7   
+param.proc_n_foot_bg = 1e-10,%5e-8;
 
-% Control noise parameters
-param.ctrl_n_foot1_acc = 1e-5;
-param.ctrl_n_foot2_acc = 1e-5;
-param.ctrl_n_foot3_acc = 1e-5;
-param.ctrl_n_foot4_acc = 1e-5;
+% % Control noise parameters
+% param.ctrl_n_foot1_acc = 1e-2;
+% param.ctrl_n_foot2_acc = 1e-2;
+% param.ctrl_n_foot3_acc = 1e-2;
+% param.ctrl_n_foot4_acc = 1e-2;
 
 % Measurement noise parameters
 param.meas_n_fk_pos_xy = 1e-5;
@@ -84,17 +84,18 @@ param.meas_n_foot_height = 0.001;
 
 
 %% Run EKF
+tune=0;
 tic;
 [state, param] = run_ekf(resampled_data, param);
 simulation_time = toc
 plots2;
 
 %% Run EKF
-
-for t = [1e-6,1e-7,1e-8,1e-9,1e-10]%[1, 1e-1, 1e-2, 1e-3, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8]
-    param.proc_n_ba = t;
-    for i = [1e-6,1e-7,1e-8,1e-9,1e-10]%[1, 1e-1, 1e-2, 1e-3, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8]
-        param.proc_n_bg = i;
+tune=1;
+for t = 1e-6%[1, 1e-1, 1e-2, 1e-3, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8]
+    param.meas_n_zero_vel_xy = t;
+    for i = 1e-8:1e-8:1e-7%[1, 1e-1, 1e-2, 1e-3, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8]
+        param.meas_n_zero_vel_z = i;
         tic;
         [state, param] = run_ekf(resampled_data, param);
         simulation_time = toc

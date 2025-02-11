@@ -14,17 +14,16 @@ proc_n_acc: better to have xy much then z.
 proc_n_ang: must use a low value otherwhys i get a lot of turbines in the graph. lower then 10-8
 proc_n_om: a good value is low but not too much (around 1e-5)
 proc_n_foot_pos: not influent
-proc_n_foot_vel: z must be a value higher then e-4. (good e-2) and after that it desn't change. While x and y increasing them the upper path rotates clockwise
+proc_n_foot_vel: very important. z must be a value higher then e-4. (good e-2) and after that it doesn't change. While x and y increasing them the upper path rotates clockwise
 
-The biases noises are not very relevant expecially the ones for the body IMU
+Biases:
+The attendable value are between 10-7 and 10-6 for the gyro. 10-6 and 10-5 for the accelerometer. For this value the biases are very high. Changing th value also the position grap can change significantly.
 
 
 The ctrl_n_foot_acc are not influent
-
-
-
-meas_n_yaw: must be lower then 0.05. PPProblem. I should not use it
-
+meas_om_body: if I use very small value nothing changes. The z component is not influent. The xy give changes for values of 0.001 and higher
+meas_acc_body: seems that are not much influent . It gives a better results for values close to 0.1/0.01
+n_foot:height: this value should be equal or lower then 0.001. The smaller it is the higher are the oscillation of the height but the offset with the ground truth is smaller.
 
 Good results:
 %% Initialize parameters

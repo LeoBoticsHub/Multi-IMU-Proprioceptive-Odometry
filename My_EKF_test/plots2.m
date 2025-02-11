@@ -1,7 +1,6 @@
 % Create a figure occupying the full screen 
-% Create a figure occupying the full screen 
 if tune==1
-    figureName = ['meas_n_zero_vel_xy = ', num2str(t),' meas_n_zero_vel_z = ', num2str(i)];
+    figureName = ['proc_n_ba = ', num2str(t),' proc_n_bg = ', num2str(i)];
 else
     figureName = ['EKF'];
 end

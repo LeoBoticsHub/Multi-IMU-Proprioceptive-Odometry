@@ -14,10 +14,10 @@ s_uk = casadi.MX.sym('Uk', ekf.control_size);   % define a symbolic variable rep
 s_dt = casadi.MX.sym('dt', 1);   % symbolic variable representing the time step
 s_f = dyn_rk4(s_xk , s_uk, s_dt, @process);   % EKF process: symbolic expression of the state update
 s_F = jacobian(s_f, s_xk);   % Jacobian of the new state with respect to old state 
-s_B = jacobian(s_f, s_uk);   % Jacobian of the new state with respect to control 
+% s_B = jacobian(s_f, s_uk);   % Jacobian of the new state with respect to control 
 ekf.f = Function('process',{s_xk, s_uk, s_dt},{s_f});
 ekf.df = Function('process_jac',{s_xk, s_uk, s_dt},{s_F});
-ekf.db = Function('control_jac',{s_xk, s_uk, s_dt},{s_B});
+% ekf.db = Function('control_jac',{s_xk, s_uk, s_dt},{s_B});
 
 % get measurement jacobians
 s_phi = casadi.MX.sym('phi', 12);  % define a symbolic variable representing the joint angles

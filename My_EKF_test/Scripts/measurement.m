@@ -28,7 +28,7 @@ for i = 1:param.num_leg % iteration for all legs
     p_fk = p_fk_func(j_ang,param.lc,param.leg(:,i)); % forward kinematic: relative position of the foot in the body frame with respect to the body
     J_vel = J_vel_func(j_ang,param.lc,param.leg(:,i)); % velocity jacobian: derivative of the forward kinematic with respect to the three joint angles t1,t2,t3
     J_vel_dot = J_vel_dot_func(j_ang,j_vel,param.lc,param.leg(:,i)); % forward kinematic Hessian: derivative of the velocity jacobian with respect to the three joint angles t1,t2,t3
-    leg_v = -(J_vel*j_vel+skew(ang_vel)*p_fk); % body velocity in world frame from leg odometry
+    leg_v = J_vel*j_vel+skew(ang_vel)*p_fk; % body velocity in world frame from leg odometry
     J_w = J_omega_func(j_ang); % angular velocity jacobian
     w_f = om_IMU_f((i-1)*3+1:(i-1)*3+3); % foot IMU angular velocity in body frame
     a_f = acc_IMU_f((i-1)*3+1:(i-1)*3+3); % foot IMU linear acceleration in body frame
@@ -38,7 +38,7 @@ for i = 1:param.num_leg % iteration for all legs
         p_fk - R_bw'*(foot_pos((i-1)*3+1:(i-1)*3+3) - pos); 
 
     meas_residual((i-1)*n_meas_leg+4:(i-1)*n_meas_leg+6) = ...
-        leg_v - R_bw'*(vel - foot_vel((i-1)*3+1:(i-1)*3+3));  
+        leg_v - R_bw'*(foot_vel((i-1)*3+1:(i-1)*3+3)-vel);  
     
     w_b = w_f-foot_bg - J_w*j_vel; % Body angular velocity with my equation
     

@@ -1,0 +1,7 @@
+%% Correct formulation for pivoting model
+phi = resampled_data.j_ang.Data(200,:)';
+angle = phi((i-1)*3+1:(i-1)*3+3);
+R_fb = R_fb_func(angle);
+p_foot = R_fb'*p_fk_func(angle,param.lc,param.leg(:,1)); % forward kinematic of the foot in body frame
+p_IMU = R_fb'*p_fk_func(angle,0.15,param.leg(:,1)); % forward kinematic of the foot IMU in body frame
+d = p_IMU-p_foot;

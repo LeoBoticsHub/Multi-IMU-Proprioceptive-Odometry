@@ -26,20 +26,14 @@ end
 %joint_acc_from_vel = movmean(joint_acc_from_vel,5,1);
 resampled_data.joint_acc = timeseries(joint_acc_from_vel, resampled_data.j_ang.Time); % as first derivative of joint velocities
 
-%%
-param.R_fs = {[-1  0  0;
-               0  0 -1;
-               0 -1  0], 
-             [-1   0   0; 
-               0   0   1;
-               0   1   0],
-             [-1  0  0;
-               0  0 -1;
-               0 -1  0],
-             [-1   0  0; 
-               0   0  1;
-               0   1  0]};
-
+%Calculate Velocity from gorund truth position
+[b, g] = sgolay(5, 11); 
+dt = 0.005;
+mocap_vel = zeros(size(resampled_data.pos_mocap.Data));
+for p = 1:3
+    mocap_vel(:,p) = conv(resampled_data.pos_mocap.Data(:,p), factorial(1)/(-dt^1) * g(:,2), 'same');
+end
+resampled_data.vel_mocap  = mocap_vel;
 %%
 % Angular Velocity Comparizon
 axis={'x','y','z'};
@@ -76,3 +70,4 @@ end
 large_noise_value = 50; % Adjust as needed
 resampled_data.acc_b_IMU.Data = resampled_data.acc_b_IMU.Data + randn(size(resampled_data.acc_b_IMU.Data)) * large_noise_value;%re_sensor_data.gyro_body_IMU.Data-re_sensor_data.gyro_body_IMU.Data;re_sensor_data.gyro_body_IMU.Data + randn(size(re_sensor_data.gyro_body_IMU.Data)) * large_noise_value;
 resampled_data.om_b_IMU.Data = resampled_data.om_b_IMU.Data + randn(size(resampled_data.om_b_IMU.Data)) * large_noise_value;%re_sensor_data.gyro_body_IMU.Data-re_sensor_data.gyro_body_IMU.Data;
+

@@ -12,10 +12,14 @@ ekf = ekf_conf(param);
 foot_pos_vel_list = zeros(6*param.num_leg,1);
 if param.has_mocap == 1
     init_pos = data.pos_mocap.Data(total_start_idx,:)';
+    init_euler = data.orient_mocap_euler.Data(total_start_idx,:)';
+    init_vel = data.vel_mocap(total_start_idx,:)';
 else
     init_pos = [0;0;param.init_body_height];
+    init_euler = zeros(3,1);
+    init_vel = zeros(3,1);
 end
-init_euler = zeros(3,1);
+
 R_bw = euler_to_rot(init_euler);
 phi = data.j_ang.Data(total_start_idx,:)';
 for i = 1:param.num_leg
@@ -26,7 +30,7 @@ end
 
 x0 = [
     init_pos;
-    zeros(3,1);
+    init_vel;
     zeros(3,1);
     init_euler;
     zeros(3,1);
@@ -81,7 +85,7 @@ for idx=total_start_idx:total_end_idx
 
     x01 = full(ekf.f(x_list(:,k), uk, dt));
     F = full(ekf.df(x_list(:,k), uk, dt));
-    B = full(ekf.db(x_list(:,k), uk, dt));
+    % B = full(ekf.db(x_list(:,k), uk, dt));
     
     % Process Noise Covariance Q1
     ekf.Q1 = diag([param.proc_n_pos_xy*ones(2,1); % pos x y
@@ -106,12 +110,12 @@ for idx=total_start_idx:total_end_idx
                             [param.proc_n_foot_ba *ones(3,1); % foot1 acc bias 
                              param.proc_n_foot_bg *ones(3,1)],4,1)]); % foot1 gyro bias 
                         
-    % Control Input Noise Covariance Q2 
-    ekf.Q2 = diag([param.ctrl_n_foot1_acc *ones(3,1);   % foot 1 IMU acceleration
-                         param.ctrl_n_foot2_acc *ones(3,1);   % foot 2 IMU acceleration
-                         param.ctrl_n_foot3_acc *ones(3,1);   % foot 3 IMU acceleration
-                         param.ctrl_n_foot4_acc *ones(3,1);   % foot 4 IMU acceleration
-                         0]);  
+    % % Control Input Noise Covariance Q2 
+    % ekf.Q2 = diag([param.ctrl_n_foot1_acc *ones(3,1);   % foot 1 IMU acceleration
+    %                      param.ctrl_n_foot2_acc *ones(3,1);   % foot 2 IMU acceleration
+    %                      param.ctrl_n_foot3_acc *ones(3,1);   % foot 3 IMU acceleration
+    %                      param.ctrl_n_foot4_acc *ones(3,1);   % foot 4 IMU acceleration
+    %                      0]);  
            
     ck = double(data.foot_contact.Data(idx,:)); 
     num_meas = 16; % number of residual equation for each leg
@@ -146,7 +150,7 @@ for idx=total_start_idx:total_end_idx
     end
     
     % Covariance Prediction
-    P01 = F*cov_list(:,:,k)*F' + ekf.Q1 + B*ekf.Q2*B';
+    P01 = F*cov_list(:,:,k)*F' + ekf.Q1;% + B*ekf.Q2*B';
 
     hat_om_dot_b_b = zeros(1,12);
     hat_om_b_IMU = data.om_b_IMU.Data(idx,:)';
